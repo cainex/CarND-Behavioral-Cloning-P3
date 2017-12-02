@@ -1,7 +1,7 @@
 import csv
 import cv2
 from keras.layers import Input, Flatten, Dense, Lambda, Conv2D, Dropout, Cropping2D
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.callbacks import ModelCheckpoint
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -31,9 +31,12 @@ def generator(path, samples, batch_size=32):
             images = []
             angles = []
             for batch_sample in batch_samples:
-                name = '{}/IMG/'.format(path)+batch_sample[0].split('/')[-1]
-                left_name = '{}/IMG/'.format(path)+batch_sample[1].split('/')[-1]
-                right_name = '{}/IMG/'.format(path)+batch_sample[2].split('/')[-1]
+                # name = '{}/IMG/'.format(path)+batch_sample[0].split('/')[-1]
+                # left_name = '{}/IMG/'.format(path)+batch_sample[1].split('/')[-1]
+                # right_name = '{}/IMG/'.format(path)+batch_sample[2].split('/')[-1]
+                name = batch_sample[0]
+                left_name = batch_sample[1]
+                right_name = batch_sample[2]
 
                 # center_image = cv2.cvtColor(cv2.imread(name), cv2.COLOR_RGB2YUV)
 #                 choice = np.random.choice(3)
@@ -109,7 +112,7 @@ def build_model():
 
     return model
 
-path = '/mnt/raid/projects/udacity/sdc_nd/datasets/behavioral/set_1'
+path = '/mnt/raid/projects/udacity/sdc_nd/datasets/behavioral/set_combined'
 samples = load_data(path)
 
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
@@ -125,10 +128,12 @@ train_generator = generator(path, train_samples, batch_size=batch_size)
 validation_generator = generator(path, validation_samples)
 
 model = build_model()
-
-checkpoint = ModelCheckpoint('model.h5', monitor='val_loss', verbose=0, save_best_only=1, mode='auto')
-
 model.compile(loss='mse', optimizer='Nadam')
+
+# model = load_model('model.h5')
+
+checkpoint = ModelCheckpoint('model_hard.h5', monitor='val_loss', verbose=0, save_best_only=1, mode='auto')
+
 
 #model.fit_generator(train_generator, steps_per_epoch=len(train_samples)/batch_size, validation_data=validation_generator, validation_steps=len(validation_samples)/batch_size, epochs=num_epochs, callbacks=[checkpoint], verbose=1)
 model.fit_generator(train_generator, steps_per_epoch=num_steps_per_epoch, validation_data=validation_generator, validation_steps=num_validation_steps, epochs=num_epochs, callbacks=[checkpoint], verbose=1)
