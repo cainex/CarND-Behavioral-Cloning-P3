@@ -107,11 +107,51 @@ With these changes, the model was able to drive the car completely around track 
 
 The final network model was based on the CNN used by NVIDIA. The dropout layer was added following the convolution layers, and a normization lambda layer along with a cropping layer were added to the front of the network. The Keras summary is:
 
+```sh
+Layer (type)                 Output Shape              Param #   
+=================================================================
+lambda_1 (Lambda)            (None, 160, 320, 3)       0         
+_________________________________________________________________
+cropping2d_1 (Cropping2D)    (None, 90, 320, 3)        0         
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 43, 158, 24)       1824      
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 20, 77, 36)        21636     
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 8, 37, 48)         43248     
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 6, 35, 64)         27712     
+_________________________________________________________________
+conv2d_5 (Conv2D)            (None, 4, 33, 64)         36928     
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 4, 33, 64)         0         
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 8448)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 100)               844900    
+_________________________________________________________________
+dense_2 (Dense)              (None, 50)                5050      
+_________________________________________________________________
+dense_3 (Dense)              (None, 10)                510       
+_________________________________________________________________
+dense_4 (Dense)              (None, 1)                 11        
+=================================================================
+Total params: 981,819
+Trainable params: 981,819
+Non-trainable params: 0
+
+```
 This model is created in the build_model function in model.py (line 76)
 
 #### 3. Creation of the Training Set & Training Process
 
-The training data was captured by completing 4 complete laps around track 1 in the first dataset, and 2 complete laps around track 2 in the second dataset. The CSV files were then concatenated together, and the two datasets were trained together.
+The training data was captured by completing 4 complete laps around track 1 in the first dataset, and 2 complete laps around track 2 in the second dataset. The CSV files were then concatenated together, and the two datasets were trained together. 
+
+| | frames | images | 
+|---|---|---|
+| **total** | 15838 | 95028 |
+| **training** | 12672 | 76032 |
+| **validation** | 3168 | 19008 |
 
 The trained data consisted of the three captured images (center left and right) along with a flipped version of each of those images. For each frame, the center, left and right images are provided, but only a single driving angle. The steering angle needed to be modified for all resulting images except the original center image. The steering angle was modified:
 
@@ -148,4 +188,4 @@ The batch generators were fed into the training of the model along with two call
 model.fit_generator(train_generator, steps_per_epoch=num_steps_per_epoch, validation_data=validation_generator, validation_steps=num_validation_steps, epochs=args.num_epochs, callbacks=[checkpoint, early_stop], verbose=1)
 ```
 
-The model was trianed for 20 epochs.
+The model was trianed for 20 epochs using the adam optimizer with a learning rate of 0.001.
